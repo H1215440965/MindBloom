@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../services/fcm_service.dart';
 import '../services/firestore_service.dart';
 import '../widgets/mindbloom_glass.dart';
 import 'journal_screen.dart';
@@ -17,6 +18,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FcmService.registerIfSignedIn();
+    });
+  }
 
   final List<Widget> _screens = const [
     HomeContent(),

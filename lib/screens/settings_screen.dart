@@ -21,6 +21,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _lastName = TextEditingController();
 
   bool _reminderEnabled = true;
+  TimeOfDay _reminderTime = const TimeOfDay(hour: 20, minute: 0);
+  bool _reminderSyncing = false;
   bool _profileLoading = true;
   bool _profileSaving = false;
 
@@ -39,6 +41,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _loadProfile();
+    _loadReminderSettings();
+  }
+
+  Future<void> _loadReminderSettings() async {
+    try {
+      final r = await _firestore.getReminderSettings();
+      if (!mounted) return;
+      setState(() {
+        _reminderEnabled = r.enabled;
+        _reminderTime = _parseTime24h(r.time24h);
+      });
+    } catch (_) {
+      // Keep defaults
+    }
+  }
+
+  TimeOfDay _parseTime24h(String raw) {
+    final parts = raw.split(':');
+    return TimeOfDay(
+      hour: int.tryParse(parts[0]) ?? 20,
+      minute: parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0,
+    );
+  }
+
+  String _reminderTimeToFirestore() {
+    final t = _reminderTime;
+    return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _persistReminderSettings() async {
+    setState(() => _reminderSyncing = true);
+    try {
+      await _firestore.saveReminderSettings(
+        enabled: _reminderEnabled,
+        time24h: _reminderTimeToFirestore(),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not save reminder: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _reminderSyncing = false);
+    }
+  }
+
+  Future<void> _pickReminderTime() async {
+    if (_reminderSyncing) return;
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _reminderTime,
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _reminderTime = picked);
+    await _persistReminderSettings();
   }
 
   @override
@@ -369,29 +430,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 12),
           GreenGlassCard(
             borderRadius: BorderRadius.circular(22),
-            padding: EdgeInsets.zero,
-            child: SwitchListTile(
-              title: Text(
-                'Daily Journal Reminder',
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: GreenGlassCardColors.primaryOnCard(context),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(
+              children: [
+                SwitchListTile(
+                  title: Text(
+                    'Daily Journal Reminder',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: GreenGlassCardColors.primaryOnCard(context),
+                    ),
+                  ),
+                  subtitle: Text(
+                    _reminderSyncing
+                        ? 'Saving…'
+                        : 'Prompt at ${_reminderTime.format(context)}. '
+                            'FCM delivery still needs a server scheduler (e.g. Cloud Functions).',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: GreenGlassCardColors.secondaryOnCard(context),
+                      height: 1.35,
+                    ),
+                  ),
+                  value: _reminderEnabled,
+                  activeThumbColor: scheme.primary,
+                  onChanged: _reminderSyncing
+                      ? null
+                      : (value) async {
+                          setState(() => _reminderEnabled = value);
+                          await _persistReminderSettings();
+                        },
                 ),
-              ),
-              subtitle: Text(
-                'Daily journal prompt at 8:00 PM',
-                style: textTheme.bodySmall?.copyWith(
-                  color: GreenGlassCardColors.secondaryOnCard(context),
-                  height: 1.35,
+                ListTile(
+                  enabled: !_reminderSyncing,
+                  leading: Icon(Icons.schedule, color: scheme.primary),
+                  title: Text(
+                    'Reminder time',
+                    style: textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: GreenGlassCardColors.primaryOnCard(context),
+                    ),
+                  ),
+                  subtitle: Text(
+                    _reminderTime.format(context),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: GreenGlassCardColors.secondaryOnCard(context),
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _pickReminderTime,
                 ),
-              ),
-              value: _reminderEnabled,
-              activeThumbColor: scheme.primary,
-              onChanged: (value) {
-                setState(() {
-                  _reminderEnabled = value;
-                });
-              },
+              ],
             ),
           ),
           const SizedBox(height: 12),
