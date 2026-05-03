@@ -1,10 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'theme/theme_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,24 +15,47 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const MindBloomApp());
+  final themeController = ThemeController();
+  await themeController.load();
+
+  runApp(
+    ChangeNotifierProvider<ThemeController>.value(
+      value: themeController,
+      child: const MindBloomApp(),
+    ),
+  );
 }
 
 class MindBloomApp extends StatelessWidget {
   const MindBloomApp({super.key});
 
+  static const Color _seed = Color(0xFF6E8B74);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MindBloom',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF6E8B74),
-        scaffoldBackgroundColor: const Color(0xFFF7F3EC),
-        fontFamily: 'Roboto',
-      ),
-      home: const AuthWrapper(),
+    return Consumer<ThemeController>(
+      builder: (context, themeController, _) {
+        return MaterialApp(
+          title: 'MindBloom',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeController.themeMode,
+          theme: ThemeData(
+            useMaterial3: true,
+            colorSchemeSeed: _seed,
+            brightness: Brightness.light,
+            scaffoldBackgroundColor: const Color(0xFFF7F3EC),
+            fontFamily: 'Roboto',
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            colorSchemeSeed: _seed,
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF1A1F1C),
+            fontFamily: 'Roboto',
+          ),
+          home: const AuthWrapper(),
+        );
+      },
     );
   }
 }
@@ -44,9 +69,9 @@ class AuthWrapper extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            backgroundColor: Color(0xFFF7F3EC),
-            body: Center(
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: const Center(
               child: CircularProgressIndicator(),
             ),
           );
@@ -56,8 +81,7 @@ class AuthWrapper extends StatelessWidget {
           return const HomeScreen();
         }
 
-        // Do not use const here because your LoginScreen constructor is not const.
-        return LoginScreen();
+        return const LoginScreen();
       },
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../services/firestore_service.dart';
+import '../widgets/mindbloom_glass.dart';
 
 class JournalScreen extends StatefulWidget {
   const JournalScreen({super.key});
@@ -142,75 +143,88 @@ class _JournalScreenState extends State<JournalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F3EC),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildJournalInputCard(),
-            const SizedBox(height: 24),
-            const Text(
-              'Your Journal History',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF263128),
+      body: MindBloomBackdrop(
+        assetPath: 'images/background/journal.jpg',
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildJournalInputCard(),
+              const SizedBox(height: 24),
+              GreenGlassCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                borderRadius: BorderRadius.circular(18),
+                child: Text(
+                  'Your Journal History',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: GreenGlassCardColors.primaryOnCard(context),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            _buildJournalHistory(),
-          ],
+              const SizedBox(height: 12),
+              _buildJournalHistory(),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildJournalInputCard() {
-    return Container(
-      width: double.infinity,
+    return GreenGlassCard(
+      borderRadius: BorderRadius.circular(24),
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF5),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'New Journal Entry',
             style: TextStyle(
               fontSize: 21,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF263128),
+              color: GreenGlassCardColors.primaryOnCard(context),
             ),
           ),
           const SizedBox(height: 16),
 
-          const Text(
+          Text(
             'Mood',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF263128),
+              color: GreenGlassCardColors.primaryOnCard(context),
             ),
           ),
           const SizedBox(height: 8),
 
           DropdownButtonFormField<String>(
-            value: _selectedMood,
+            initialValue: _selectedMood,
+            dropdownColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+            style: TextStyle(
+              color: GreenGlassCardColors.primaryOnCard(context),
+              fontWeight: FontWeight.w500,
+            ),
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFF2EDE3),
+              fillColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.white.withValues(alpha: 0.9),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+                borderSide: BorderSide(
+                  color: const Color(0xFF6E8B74).withValues(alpha: 0.22),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                  color: const Color(0xFF6E8B74).withValues(alpha: 0.18),
+                ),
               ),
             ),
             items: const [
@@ -230,11 +244,11 @@ class _JournalScreenState extends State<JournalScreen> {
 
           const SizedBox(height: 18),
 
-          const Text(
+          Text(
             'Mood Tags',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF263128),
+              color: GreenGlassCardColors.primaryOnCard(context),
             ),
           ),
           const SizedBox(height: 10),
@@ -244,14 +258,19 @@ class _JournalScreenState extends State<JournalScreen> {
             runSpacing: 8,
             children: _availableTags.map((tag) {
               final isSelected = _selectedTags.contains(tag);
+              final isDark = Theme.of(context).brightness == Brightness.dark;
 
               return ChoiceChip(
                 label: Text(tag),
                 selected: isSelected,
                 selectedColor: const Color(0xFF6E8B74),
-                backgroundColor: const Color(0xFFF2EDE3),
+                backgroundColor: isDark
+                    ? Colors.white.withValues(alpha: 0.14)
+                    : Colors.white.withValues(alpha: 0.82),
                 labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF263128),
+                  color: isSelected
+                      ? Colors.white
+                      : GreenGlassCardColors.primaryOnCard(context),
                   fontWeight: FontWeight.w600,
                 ),
                 onSelected: (_) => _toggleTag(tag),
@@ -265,21 +284,44 @@ class _JournalScreenState extends State<JournalScreen> {
             controller: _journalController,
             minLines: 7,
             maxLines: 12,
+            style: TextStyle(
+              color: GreenGlassCardColors.primaryOnCard(context),
+            ),
             decoration: InputDecoration(
               hintText:
                   'Today I felt a little overwhelmed, but writing things down helped me slow down...',
+              hintStyle: TextStyle(
+                color: GreenGlassCardColors.tertiaryOnCard(context),
+              ),
               filled: true,
-              fillColor: const Color(0xFFF2EDE3),
+              fillColor: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.white.withValues(alpha: 0.9),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
+                borderSide: BorderSide(
+                  color: const Color(0xFF6E8B74).withValues(alpha: 0.2),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: BorderSide(
+                  color: const Color(0xFF6E8B74).withValues(alpha: 0.16),
+                ),
               ),
             ),
           ),
 
           const SizedBox(height: 18),
 
-          if (_isSaving) const LinearProgressIndicator(),
+          if (_isSaving)
+            LinearProgressIndicator(
+              color: const Color(0xFF6E8B74),
+              backgroundColor: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.12),
+            ),
 
           if (_isSaving) const SizedBox(height: 14),
 
@@ -354,18 +396,14 @@ class _JournalScreenState extends State<JournalScreen> {
         final docs = snapshot.data?.docs ?? [];
 
         if (docs.isEmpty) {
-          return Container(
-            width: double.infinity,
+          return GreenGlassCard(
+            borderRadius: BorderRadius.circular(20),
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFBF5),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
+            child: Text(
               'No journal entries yet. Write your first reflection above.',
               style: TextStyle(
-                color: Color(0xFF6D716C),
-                height: 1.4,
+                color: GreenGlassCardColors.secondaryOnCard(context),
+                height: 1.45,
               ),
             ),
           );
@@ -381,121 +419,122 @@ class _JournalScreenState extends State<JournalScreen> {
             final isDraft = data['isDraft'] ?? false;
             final createdAt = data['createdAt'];
 
-            return Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 14),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFBF5),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: GreenGlassCard(
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEAF1E7),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          mood.toString(),
-                          style: const TextStyle(
-                            color: Color(0xFF6E8B74),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (isDraft == true)
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFE7C2),
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFF3D5248)
+                                    : const Color(0xFFEAF1E7),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
-                            'Draft',
+                          child: Text(
+                            mood.toString(),
                             style: TextStyle(
-                              color: Color(0xFF9A6A24),
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? GreenGlassCardColors.primaryOnCard(context)
+                                  : const Color(0xFF4F6B55),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          _deleteEntry(doc.id);
-                        },
-                        icon: const Icon(Icons.delete_outline),
-                        color: Colors.redAccent,
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    _formatDate(createdAt),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6D716C),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Text(
-                    content.toString(),
-                    style: const TextStyle(
-                      color: Color(0xFF263128),
-                      height: 1.45,
-                      fontSize: 15,
-                    ),
-                  ),
-
-                  if (tags is List && tags.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: tags.map<Widget>((tag) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 9,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF2EDE3),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Text(
-                            '#$tag',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF6D716C),
+                        const SizedBox(width: 8),
+                        if (isDraft == true)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFE7C2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Draft',
+                              style: TextStyle(
+                                color: Color(0xFF9A6A24),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        );
-                      }).toList(),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () {
+                            _deleteEntry(doc.id);
+                          },
+                          icon: const Icon(Icons.delete_outline),
+                          color: Colors.redAccent,
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _formatDate(createdAt),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: GreenGlassCardColors.tertiaryOnCard(context),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      content.toString(),
+                      style: TextStyle(
+                        color: GreenGlassCardColors.primaryOnCard(context),
+                        height: 1.45,
+                        fontSize: 15,
+                      ),
+                    ),
+                    if (tags is List && tags.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: tags.map<Widget>((tag) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white.withValues(alpha: 0.12)
+                                  : Colors.white.withValues(alpha: 0.75),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFF6E8B74)
+                                    .withValues(alpha: 0.28),
+                              ),
+                            ),
+                            child: Text(
+                              '#$tag',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color:
+                                    GreenGlassCardColors.secondaryOnCard(
+                                        context),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             );
           }).toList(),
@@ -503,4 +542,5 @@ class _JournalScreenState extends State<JournalScreen> {
       },
     );
   }
+
 }

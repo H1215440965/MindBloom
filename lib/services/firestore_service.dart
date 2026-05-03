@@ -72,6 +72,43 @@ class FirestoreService {
         .delete();
   }
 
+  Future<void> saveUserProfile({
+    required String firstName,
+    required String lastName,
+    DateTime? dateOfBirth,
+    String? gender,
+  }) async {
+    final ref = _db.collection('users').doc(uid);
+    await ref.set({}, SetOptions(merge: true));
+
+    final updates = <String, dynamic>{
+      'profile.firstName': firstName.trim(),
+      'profile.lastName': lastName.trim(),
+      'profile.gender': (gender ?? '').trim(),
+      'profile.updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (dateOfBirth != null) {
+      updates['profile.dateOfBirth'] = Timestamp.fromDate(
+        DateTime(dateOfBirth.year, dateOfBirth.month, dateOfBirth.day),
+      );
+    }
+
+    await ref.update(updates);
+  }
+
+  Future<Map<String, dynamic>?> getUserProfile() async {
+    final doc = await _db.collection('users').doc(uid).get();
+    final data = doc.data();
+    if (data == null) return null;
+    final profile = data['profile'];
+    if (profile is Map<String, dynamic>) return profile;
+    if (profile is Map) {
+      return Map<String, dynamic>.from(profile);
+    }
+    return null;
+  }
+
   Future<void> saveReminderSettings({
     required bool enabled,
     required String time,

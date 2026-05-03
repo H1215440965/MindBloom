@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../services/firestore_service.dart';
+import '../widgets/mindbloom_glass.dart';
 import 'journal_screen.dart';
 import 'insights_screen.dart';
 import 'resources_screen.dart';
@@ -35,18 +36,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F3EC),
+      backgroundColor: scheme.surface,
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
-        backgroundColor: const Color(0xFFF7F3EC),
-        foregroundColor: const Color(0xFF263128),
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
         elevation: 0,
       ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: NavigationBar(
-        backgroundColor: const Color(0xFFFFFBF5),
-        indicatorColor: const Color(0xFFDDE8D9),
+        backgroundColor: scheme.surfaceContainerLow,
+        indicatorColor: scheme.primaryContainer,
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
           setState(() {
@@ -158,190 +161,193 @@ class _HomeContentState extends State<HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${_getGreeting()}, ${_getUserName()}',
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF263128),
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Reflect, track, and grow today.',
-            style: TextStyle(
-              fontSize: 15,
-              color: Color(0xFF6D716C),
-            ),
-          ),
-          const SizedBox(height: 20),
+    const green = Color(0xFF6E8B74);
 
-          Row(
-            children: [
-              Expanded(
-                child: _InfoCard(
-                  icon: Icons.local_fire_department,
-                  title: '7-day streak',
-                  value: 'Keep going',
-                  color: Color(0xFFE6A95C),
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: _InfoCard(
-                  icon: Icons.check_circle_outline,
-                  title: 'Mood check-ins',
-                  value: 'Today',
-                  color: Color(0xFF6E8B74),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFBF5),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'How are you feeling today?',
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF263128),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _MoodButton(
-                      label: 'Calm',
-                      emoji: '🌿',
-                      selected: _selectedMood == 'Calm',
-                      disabled: _isSavingMood,
-                      onTap: () => _saveMood('Calm'),
-                    ),
-                    _MoodButton(
-                      label: 'Happy',
-                      emoji: '😊',
-                      selected: _selectedMood == 'Happy',
-                      disabled: _isSavingMood,
-                      onTap: () => _saveMood('Happy'),
-                    ),
-                    _MoodButton(
-                      label: 'Stressed',
-                      emoji: '😣',
-                      selected: _selectedMood == 'Stressed',
-                      disabled: _isSavingMood,
-                      onTap: () => _saveMood('Stressed'),
-                    ),
-                    _MoodButton(
-                      label: 'Tired',
-                      emoji: '😴',
-                      selected: _selectedMood == 'Tired',
-                      disabled: _isSavingMood,
-                      onTap: () => _saveMood('Tired'),
-                    ),
-                  ],
-                ),
-
-                if (_isSavingMood) ...[
-                  const SizedBox(height: 16),
-                  const LinearProgressIndicator(),
-                ],
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 22),
-
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const JournalScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.edit_note),
-              label: const Text('Start Journal Entry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6E8B74),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 22),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF1E7),
+    return MindBloomBackdrop(
+      assetPath: 'images/background/homescreen.jpg',
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GreenGlassCard(
               borderRadius: BorderRadius.circular(22),
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${_getGreeting()}, ${_getUserName()}',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: GreenGlassCardColors.primaryOnCard(context),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Reflect, track, and grow today.',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: GreenGlassCardColors.secondaryOnCard(context),
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 20),
+
+            Row(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.notifications_active_outlined,
-                      color: Color(0xFF6E8B74),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      "Today's reminder",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF263128),
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                Expanded(
+                  child: _InfoCard(
+                    icon: Icons.local_fire_department,
+                    title: '7-day streak',
+                    value: 'Keep going',
+                    accentColor: const Color(0xFFC47A2C),
+                  ),
                 ),
-                SizedBox(height: 10),
-                Text(
-                  'Take a 3-minute pause and write one thing you are grateful for.',
-                  style: TextStyle(
-                    color: Color(0xFF4E5A50),
-                    height: 1.4,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _InfoCard(
+                    icon: Icons.check_circle_outline,
+                    title: 'Mood check-ins',
+                    value: 'Today',
+                    accentColor: green,
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+
+            const SizedBox(height: 24),
+
+            GreenGlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'How are you feeling today?',
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                      color: GreenGlassCardColors.primaryOnCard(context),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _MoodButton(
+                        label: 'Calm',
+                        emoji: '🌿',
+                        selected: _selectedMood == 'Calm',
+                        disabled: _isSavingMood,
+                        onTap: () => _saveMood('Calm'),
+                      ),
+                      _MoodButton(
+                        label: 'Happy',
+                        emoji: '😊',
+                        selected: _selectedMood == 'Happy',
+                        disabled: _isSavingMood,
+                        onTap: () => _saveMood('Happy'),
+                      ),
+                      _MoodButton(
+                        label: 'Stressed',
+                        emoji: '😣',
+                        selected: _selectedMood == 'Stressed',
+                        disabled: _isSavingMood,
+                        onTap: () => _saveMood('Stressed'),
+                      ),
+                      _MoodButton(
+                        label: 'Tired',
+                        emoji: '😴',
+                        selected: _selectedMood == 'Tired',
+                        disabled: _isSavingMood,
+                        onTap: () => _saveMood('Tired'),
+                      ),
+                    ],
+                  ),
+
+                  if (_isSavingMood) ...[
+                    const SizedBox(height: 16),
+                    LinearProgressIndicator(
+                      color: green,
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.12),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 22),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const JournalScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.edit_note),
+                label: const Text('Start Journal Entry'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: green,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 22),
+
+            GreenGlassCard(
+              borderRadius: BorderRadius.circular(22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.notifications_active_outlined,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Today's reminder",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: GreenGlassCardColors.primaryOnCard(context),
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Take a 3-minute pause and write one thing you are grateful for.',
+                    style: TextStyle(
+                      color: GreenGlassCardColors.secondaryOnCard(context),
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -364,10 +370,14 @@ class _MoodButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bgColor =
-        selected ? const Color(0xFF6E8B74) : const Color(0xFFF2EDE3);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color bgColor = selected
+        ? const Color(0xFF6E8B74)
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.14)
+            : Colors.white.withValues(alpha: 0.82));
     final Color textColor =
-        selected ? Colors.white : const Color(0xFF263128);
+        selected ? Colors.white : GreenGlassCardColors.primaryOnCard(context);
 
     return InkWell(
       onTap: disabled ? null : onTap,
@@ -404,50 +414,41 @@ class _InfoCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String value;
-  final Color color;
+  final Color accentColor;
 
   const _InfoCard({
     required this.icon,
     required this.title,
     required this.value,
-    required this.color,
+    required this.accentColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GreenGlassCard(
+      borderRadius: BorderRadius.circular(20),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFBF5),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             icon,
-            color: color,
+            color: accentColor,
           ),
           const SizedBox(height: 10),
           Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF6D716C),
+            style: TextStyle(
+              color: GreenGlassCardColors.tertiaryOnCard(context),
               fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: Color(0xFF263128),
+            style: TextStyle(
+              color: GreenGlassCardColors.primaryOnCard(context),
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
